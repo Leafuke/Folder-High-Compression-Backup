@@ -171,6 +171,12 @@ int PreSolve(string s)
 			++tt;
 			continue;
 		}
+		/*else if(s[i]==' ')
+		{
+			Gpath2[tt]+='"';
+			Gpath2[tt]+=' ';
+			Gpath2[tt]+='"';
+		}*/
 		Gpath2[tt]+=s[i];
 	}
 	return tt;
@@ -189,7 +195,8 @@ void Backup(int bf)
     		if(j==13 || j==16) tmp+="-";
     		else tmp+=com[j];
     tmp="["+tmp+"]"+name[bf].alias;
-	command=yasuo+" a -t7z "+tmp+" "+name[bf].real+"\\*";
+	command=yasuo+" a -t7z "+tmp+" \""+name[bf].real+"\"\\*";
+	cout<< endl <<command <<endl;
 	system(command.c_str());
 	command="move "+tmp+".7z "+folderName;
 	system(command.c_str());
@@ -203,7 +210,7 @@ void Main()
     if (!file.is_open()) {
 		printf("\nEstablishing configuration file...\n"); 
     	ofstream newFile(filename);
-    	printf("Please enter the parent folder path of the folder you are backing up (separate each folder path by $for multiple folders): ");
+    	printf("Please enter the parent folder path of the folder you are backing up (separate each folder path by $ for multiple folders): ");
 		getline(cin,Gpath);
 		printf("Please enter which folder you want to backup to:");
 		getline(cin,Bpath);
@@ -211,12 +218,16 @@ void Main()
         if (newFile.is_open()) {
         	newFile << "Backup parent folder path:" << Gpath2[0] << endl;
         	for(int i=1;i<=summ;++i)
-        		newFile << Gpath2[i] << endl;
-        	newFile << '*' << endl;
+        		newFile << Gpath2[i] << '$';
+//        	newFile << '*' << endl;
             newFile << "Backup Storage Folder Path:" << Bpath << endl;
 			string keyPath = "Software\\7-Zip"; 
 			string valueName = "Path";
-            newFile << "Compressed software path:" << GetRegistryValue(keyPath, valueName)+"7z.exe" << endl;
+			string softw=GetRegistryValue(keyPath, valueName),softww="";
+			for(int i=0;i<softw.size();++i)
+				if(softw[i]==' ') softww+='"',softww+=' ',softww+='"';
+				else softww+=softw[i];
+            newFile << "Compressed software path:" << softww+"7z.exe" << endl;
             newFile << "Backup before restoring:0" << endl;
             newFile << "Toolbox Topping:0" << endl;
             newFile << "Manually select restore:0" << endl;
@@ -224,6 +235,7 @@ void Main()
     	printf("\nThere are the following folders in these folders:\n\n"); 
     	for(int i=0;i<=summ;++i)
     	{
+    		cout << endl; 
     		std::vector<std::string> subdirectories;
 			listSubdirectories(Gpath2[i], subdirectories);
 		    for (const auto& folderName : subdirectories)
@@ -239,13 +251,13 @@ void Main()
 			for (const auto& folderName : subdirectories)
 		    {
 		        string alias;
-		        cout << "Please enter an alias for folder " << folderName;
+		        cout << "Please enter an alias for folder " << folderName << endl;
 		        cin >> alias;
-				newFile << folderName << " " << alias << std::endl;
+				newFile << folderName << endl << alias << endl;
 		    }
 		    newFile << "$" << endl;
 		}
-	    newFile<< "*" << endl;
+	    newFile << "*" << endl;
 	    newFile.close();
         return ;
     }
@@ -254,20 +266,14 @@ void Main()
     
     freopen("config.ini","r",stdin);
     Qread();
-    int summ=0;
-    string tmp;
-    while(true)
-    {
-    	getline(cin,tmp);
-    	if(tmp[0]!='*')
-    		Gpath2[summ++]=tmp;
-    	else break;
-	}
+    string temps="";
+    getline(cin,temps);
+    int summ=PreSolve(temps);
     Qread();
     getline(cin,Bpath);
     Qread();
     getline(cin,yasuo);
-    yasuo="\""+yasuo+"\"";
+//    yasuo="\""+yasuo+"\""; useless
     Qread();
     cin>>prebf;
     Qread();
@@ -277,9 +283,10 @@ void Main()
     int i=0;
     printf("Your folder is as follows:\n\n");
     int ttt=0;
+    char ch=getchar();//DEBUG because getline ...
     while(true)
     {
-    	cin>>name[++i].real;
+    	getline(cin,name[++i].real);
     	if(name[i].real[0]=='*') break;
     	else if(name[i].real[0]=='$')
     	{
@@ -288,7 +295,7 @@ void Main()
 		}
     	name[i].real=Gpath2[ttt]+"/"+name[i].real;
     	name[i].x=ttt;
-    	cin>>name[i].alias;
+    	getline(cin,name[i].alias);
     	printf("%d. ",i);
     	cout<<name[i].alias<<endl;
 	}
@@ -366,8 +373,8 @@ void Main()
         	ofstream cfile("config.ini");
         	cfile << "Backup parent folder path:" << Gpath2[0] << endl;
         	for(int i=1;i<=summ;++i)
-        		cfile << Gpath2[i] << endl;
-        	cfile << '*' << endl;
+        		cfile << Gpath2[i] << '$';
+//        	cfile << '*' << endl;
         	cfile << "Backup Storage Folder Path:" << Bpath << endl;
 			string keyPath = "Software\\7-Zip"; 
 			string valueName = "Path";
@@ -378,28 +385,28 @@ void Main()
         	printf("\nThere are the following folders in these folders:\n\n"); 
 	    	for(int i=0;i<=summ;++i)
 	    	{
-	    		std::vector<std::string> subdirectories;
+	    		vector<string> subdirectories;
 				listSubdirectories(Gpath2[i], subdirectories);
 			    for (const auto& folderName : subdirectories)
 			    {
-					std::string NGpath=Gpath2[i]+"/"+folderName;
-			        std::string modificationDate = getModificationDate(NGpath);
-			        std::cout << "Folder name: " << folderName << endl;
-			        std::cout << "Modification date" << modificationDate << endl;
-			        std::cout << "-----------" << endl;
+					string NGpath=Gpath2[i]+"/"+folderName;
+			        string modificationDate = getModificationDate(NGpath);
+			        cout << "Folder name: " << folderName << endl;
+			        cout << "Modification date" << modificationDate << endl;
+			        cout << "-----------" << endl;
 			    }
 			    Sleep(2000);
 			    sprint("Next, you need to give these folders aliases that are easy for you to understand.\n\n",50);
 				for (const auto& folderName : subdirectories)
 			    {
 			        string alias;
-			        cout << "Please enter an alias for folder " << folderName;
+			        cout << "Please enter an alias for folder " << endl << folderName;
 			        cin >> alias;
-					cfile << folderName << " " << alias << endl;
+					cfile << folderName << endl << alias << endl;
 			    }
 			    cfile << "$" << endl;
 			}
-		    cfile<< "*" << endl;
+		    cfile << "*" << endl;
 	    	puts("\n\nUpdate folder completed\n\n");
 	    	cfile.close();
 		}
@@ -433,16 +440,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	            command="start config.ini";
 				system(command.c_str());
 	            break;
-				else
-				{
-					printf("0\n");
-	        		for(int i=2;i<=tt;++i)
-	        			cout<<temps[i];
-		        	printf("\n已切换至JAVA版存档，请重启程序");
-		        	Sleep(5000);
-	        	}*/
-	        	break;
-			}
 		}
 		break;
 	}
