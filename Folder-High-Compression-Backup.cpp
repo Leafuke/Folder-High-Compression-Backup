@@ -196,7 +196,7 @@ void Backup(int bf)
     		else tmp+=com[j];
     tmp="["+tmp+"]"+name[bf].alias;
 	command=yasuo+" a -t7z "+tmp+" \""+name[bf].real+"\"\\*";
-	cout<< endl <<command <<endl;
+	cout<< endl <<command <<endl;//debug 
 	system(command.c_str());
 	command="move "+tmp+".7z "+folderName;
 	system(command.c_str());
@@ -216,10 +216,10 @@ void Main()
 		getline(cin,Bpath);
 		int summ=PreSolve(Gpath);
         if (newFile.is_open()) {
-        	newFile << "Backup parent folder path:" << Gpath2[0] << endl;
-        	for(int i=1;i<=summ;++i)
+        	newFile << "Backup parent folder path:" << Gpath2[0] << '$';
+        	for(int i=1;i<summ;++i)
         		newFile << Gpath2[i] << '$';
-//        	newFile << '*' << endl;
+        	newFile << Gpath2[summ] << endl;
             newFile << "Backup Storage Folder Path:" << Bpath << endl;
 			string keyPath = "Software\\7-Zip"; 
 			string valueName = "Path";
@@ -371,10 +371,10 @@ void Main()
 		{
 			freopen("CON","r",stdin);
         	ofstream cfile("config.ini");
-        	cfile << "Backup parent folder path:" << Gpath2[0] << endl;
-        	for(int i=1;i<=summ;++i)
+        	cfile << "Backup parent folder path:" << Gpath2[0] << '$';
+        	for(int i=1;i<summ;++i)
         		cfile << Gpath2[i] << '$';
-//        	cfile << '*' << endl;
+        	cfile << Gpath2[summ] << endl;
         	cfile << "Backup Storage Folder Path:" << Bpath << endl;
 			string keyPath = "Software\\7-Zip"; 
 			string valueName = "Path";
