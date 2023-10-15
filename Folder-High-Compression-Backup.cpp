@@ -132,7 +132,8 @@ void Qread()
 {
 	char ch;
 	ch=getchar();
-	while(ch!=':') ch=getchar(); 
+	while(ch!=':') ch=getchar();
+	return ;
 }
 string GetRegistryValue(const std::string& keyPath, const std::string& valueName)
 {
@@ -171,12 +172,6 @@ int PreSolve(string s)
 			++tt;
 			continue;
 		}
-		/*else if(s[i]==' ')
-		{
-			Gpath2[tt]+='"';
-			Gpath2[tt]+=' ';
-			Gpath2[tt]+='"';
-		}*/
 		Gpath2[tt]+=s[i];
 	}
 	return tt;
@@ -303,7 +298,7 @@ void Main()
 	
 	while(true)
 	{
-		printf("Do you want to (1) back up the data, (2) restore, or (3) update the folder? (press 1 or 2 or 3)\n");
+		printf("Do you want to (1) back up the data, (2) restore, or (3) update the folder? (4) auto backup (press 1 or 2 or 3)\n");
 		char ch;
 		ch=getch();
 		if(ch=='1')
@@ -410,7 +405,21 @@ void Main()
 	    	puts("\n\nUpdate folder completed\n\n");
 	    	cfile.close();
 		}
-		else printf("Please Click 1 or 2 or 3 on the keyboard\n\n");
+		else if(ch=='4')
+		{
+			printf("Enter the corresponding serial number to complete the corresponding data backup:");
+			int bf,tim;
+			scanf("%d",&bf);
+			printf("Enter time interval(minute): ");
+			scanf("%d",&tim);
+			printf("Entered automatic backup mode, files will be backed up every %d minutes",tim);
+			while(true)
+			{
+				Backup(bf);
+				Sleep(tim*6000);
+			}
+		}
+		else printf("Please Click 1/2/3/4 on the keyboard\n\n");
 	}
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 //    return ;
