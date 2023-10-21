@@ -199,6 +199,116 @@ void Backup(int bf,bool echo)
 	system(command.c_str());
 	return ;
 }
+void CreateConfig()
+{
+	printf("你需要创建 (1)一般配置 还是 (2)全自动配置");
+	char ch=getch();
+	string folderName,filename = "config1.ini";
+	string i="1";
+    ifstream file(filename);
+    while(file.is_open())
+    {
+    	i[0]+=1;
+    	filename="config"+i+".ini";
+    	ifstream file(filename);
+	}
+	if(ch=='1')
+	{
+	    if (!file.is_open())
+		{
+			printf("\nEstablishing configuration file named %s\n",&filename[0]); 
+	    	ofstream newFile(filename);
+	    	printf("Please enter the parent folder path of the folder you are backing up (separate each folder path by $ for multiple folders): ");
+			getline(cin,Gpath);
+			printf("Please enter which folder you want to backup to:");
+			getline(cin,Bpath);
+			int summ=PreSolve(Gpath);
+	        if (newFile.is_open()) {
+	        	newFile << "The serial number of the config file used:0";
+	        	newFile << "Backup parent folder path:" << Gpath2[0] << '$';
+	        	for(int i=1;i<summ;++i)
+	        		newFile << Gpath2[i] << '$';
+	        	newFile << Gpath2[summ] << endl;
+	            newFile << "Backup Storage Folder Path:" << Bpath << endl;
+				string keyPath = "Software\\7-Zip"; 
+				string valueName = "Path";
+				string softw=GetRegistryValue(keyPath, valueName),softww="";
+				for(int i=0;i<softw.size();++i)
+					if(softw[i]==' ') softww+='"',softww+=' ',softww+='"';
+					else softww+=softw[i];
+	            newFile << "Compressed software path:" << softww+"7z.exe" << endl;
+	            newFile << "Backup before restoring:0" << endl;
+	            newFile << "Toolbox Topping:0" << endl;
+	            newFile << "Manually select restore:0" << endl;
+	            newFile << "Progress Display:1" << endl;
+	            newFile << "Compressed Level:5" << endl;
+	    	}
+	    	printf("\nThere are the following folders in these folders:\n\n"); 
+	    	for(int i=0;i<=summ;++i)
+	    	{
+	    		cout << endl; 
+	    		std::vector<std::string> subdirectories;
+				listSubdirectories(Gpath2[i], subdirectories);
+			    for (const auto& folderName : subdirectories)
+			    {
+					std::string NGpath=Gpath2[i]+"/"+folderName;
+			        std::string modificationDate = getModificationDate(NGpath);
+			        std::cout << "Folder name: " << folderName << endl;
+			        std::cout << "Modification date " << modificationDate << endl;
+			        std::cout << "-----------" << endl;
+			    }
+			    Sleep(2000);
+			    sprint("Next, you need to give these folders aliases that are easy for you to understand.\n\n",50);
+				for (const auto& folderName : subdirectories)
+			    {
+			        string alias;
+			        cout << "Please enter an alias for folder " << folderName << endl;
+			        cin >> alias;
+					newFile << folderName << endl << alias << endl;
+			    }
+			    newFile << "$" << endl;
+			}
+		    newFile << "*" << endl;
+		    newFile.close();
+	        return ;
+	    }
+	}
+	else if(ch=='2')
+	{
+		if(!file.is_open())
+		{
+			ofstream newFile(filename);
+			newFile << "AUTO:1";
+			int configs;
+			printf("需要调用的配置文件序号(从中获取存档名称和别名):");
+			newFile << "Use Config:" << configs << endl;
+			printf("需要备份第几个存档:");
+			cin>>configs;
+			newFile << "BF:" << configs << endl;
+			printf("你需要 (1)定时备份 还是 (2)间隔备份");
+			ch=getch();
+			if(ch=='1')
+				printf("输入你要在什么时间备份:");
+			else if(ch=='2')
+				printf("输入你要间隔多少分钟备份:");
+			else{
+				printf("\nError\n");
+				return ;
+			}
+			string Time;
+			cin>>Time;
+			newFile << "BF Time:" << Time << endl;
+			printf("是否开启免打扰模式(0/1):");
+			cin>>configs;
+			newFile << "Inter:" << configs;
+		}
+	}
+	else
+	{
+		printf("\n\nError\n\n");
+		return ;
+	}
+}
 void Main()
 {
 	string folderName;
@@ -320,7 +430,7 @@ void Main()
 	
 	while(true)
 	{
-		printf("Do you want to (1) back up the data, (2) restore, (3) update the folder or (4) auto backup? (press 1/2/3/4)\n");
+		printf("Do you want to (1) back up the data, (2) restore, (3) update the folder or (4) auto backup? (5) create a config (press 1/2/3/4/5)\n");
 		char ch;
 		ch=getch();
 		if(ch=='1')
@@ -443,6 +553,10 @@ void Main()
 				Backup(bf,false);
 				Sleep(tim*60000);
 			}
+		}
+		else if(ch=='5')
+		{
+			CreateConfig();
 		}
 		else printf("Please Click 1/2/3/4 on the keyboard\n\n");
 	}
