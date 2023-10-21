@@ -132,7 +132,8 @@ void Qread()
 {
 	char ch;
 	ch=getchar();
-	while(ch!=':') ch=getchar(); 
+	while(ch!=':') ch=getchar();
+	return ;
 }
 string GetRegistryValue(const std::string& keyPath, const std::string& valueName)
 {
@@ -154,8 +155,8 @@ struct names{
 	string real,alias;
 	int x;
 }name[100]; 
-string rname2[20],Bpath,command,yasuo;
-bool prebf,ontop,choice;
+string rname2[20],Bpath,command,yasuo,lv;
+bool prebf,ontop,choice,echos;
 HWND hwnd;
 struct File {
     string name;
@@ -171,17 +172,11 @@ int PreSolve(string s)
 			++tt;
 			continue;
 		}
-		/*else if(s[i]==' ')
-		{
-			Gpath2[tt]+='"';
-			Gpath2[tt]+=' ';
-			Gpath2[tt]+='"';
-		}*/
 		Gpath2[tt]+=s[i];
 	}
 	return tt;
 }
-void Backup(int bf)
+void Backup(int bf,bool echo)
 {
 	string folderName = Bpath + "/" + name[bf].alias; // Set folder name
 	// Create a folder using mkdir ()
@@ -195,10 +190,12 @@ void Backup(int bf)
     		if(j==13 || j==16) tmp+="-";
     		else tmp+=com[j];
     tmp="["+tmp+"]"+name[bf].alias;
-	command=yasuo+" a -t7z "+tmp+" \""+name[bf].real+"\"\\*";
-	cout<< endl <<command <<endl;//debug 
+	if(echo) command=yasuo+" a -t7z -mx="+lv+" "+tmp+" \""+name[bf].real+"\"\\*";
+	else command=yasuo+" a -t7z -mx="+lv+" "+tmp+" \""+name[bf].real+"\"\\*";
+//	cout<< endl << command <<endl;//debug 
 	system(command.c_str());
-	command="move "+tmp+".7z "+folderName;
+	if(echo) command="move "+tmp+".7z "+folderName;
+	else command="move "+tmp+".7z "+folderName;
 	system(command.c_str());
 	return ;
 }
@@ -216,6 +213,7 @@ void Main()
 		getline(cin,Bpath);
 		int summ=PreSolve(Gpath);
         if (newFile.is_open()) {
+        	newFile << "The serial number of the config file used:0";
         	newFile << "Backup parent folder path:" << Gpath2[0] << '$';
         	for(int i=1;i<summ;++i)
         		newFile << Gpath2[i] << '$';
@@ -231,6 +229,8 @@ void Main()
             newFile << "Backup before restoring:0" << endl;
             newFile << "Toolbox Topping:0" << endl;
             newFile << "Manually select restore:0" << endl;
+            newFile << "Progress Display:1" << endl;
+            newFile << "Compressed Level:5" << endl;
     	}
     	printf("\nThere are the following folders in these folders:\n\n"); 
     	for(int i=0;i<=summ;++i)
@@ -266,7 +266,20 @@ void Main()
     
     freopen("config.ini","r",stdin);
     Qread();
+    int configs;
     string temps="";
+    char configss[10];
+	scanf("%d",&configs);
+	if(configs!=0)
+	{
+		temps+='0';
+		temps[0]=configs+'0';
+		temps="config"+temps+".ini";
+		for(int i=0;i<temps.size();++i)
+			configss[i]=temps[i];
+	}
+	freopen(configss,"r",stdin);
+    Qread();
     getline(cin,temps);
     int summ=PreSolve(temps);
     Qread();
@@ -280,6 +293,10 @@ void Main()
     cin>>ontop;
     Qread();
 	cin>>choice;
+	Qread();
+	cin>>echos;
+	Qread();
+	getline(cin,lv);
     int i=0;
     printf("Your folder is as follows:\n\n");
     int ttt=0;
@@ -303,7 +320,7 @@ void Main()
 	
 	while(true)
 	{
-		printf("Do you want to (1) back up the data, (2) restore, or (3) update the folder? (press 1 or 2 or 3)\n");
+		printf("Do you want to (1) back up the data, (2) restore, (3) update the folder or (4) auto backup? (press 1/2/3/4)\n");
 		char ch;
 		ch=getch();
 		if(ch=='1')
@@ -311,7 +328,7 @@ void Main()
 			printf("Enter the corresponding serial number to complete the corresponding data backup:");
 			int bf;
 			scanf("%d",&bf);
-			Backup(bf);
+			Backup(bf,echos);
 			sprint("\n\nBackup complete! ! !\n\n",40);
 		}
 		else if(ch=='2')
@@ -362,7 +379,7 @@ void Main()
 				files.name=temp[bf2];
 			}
 		    if(prebf)
-		    	Backup(bf);
+		    	Backup(bf,false);
 			command=yasuo+" x "+Bpath+"/"+name[bf].alias+"/"+files.name+" -o"+name[bf].real+" -y";
 			system(command.c_str());
 			sprint("\n\nRestore complete! ! !\n\n",40);
@@ -371,6 +388,7 @@ void Main()
 		{
 			freopen("CON","r",stdin);
         	ofstream cfile("config.ini");
+        	cfile << "The serial number of the config file used:0";
         	cfile << "Backup parent folder path:" << Gpath2[0] << '$';
         	for(int i=1;i<summ;++i)
         		cfile << Gpath2[i] << '$';
@@ -382,6 +400,8 @@ void Main()
             cfile << "Backup before restoring:" << prebf << endl;
             cfile << "Toolbox Topping:" << ontop << endl;
             cfile << "Manually select restore:" << choice << endl;
+            cfile << "Progress Display:" << echos << endl;
+            cfile << "Compressed Level:" << lv << endl;
         	printf("\nThere are the following folders in these folders:\n\n"); 
 	    	for(int i=0;i<=summ;++i)
 	    	{
@@ -410,7 +430,21 @@ void Main()
 	    	puts("\n\nUpdate folder completed\n\n");
 	    	cfile.close();
 		}
-		else printf("Please Click 1 or 2 or 3 on the keyboard\n\n");
+		else if(ch=='4')
+		{
+			printf("Enter the corresponding serial number to complete the corresponding data backup:");
+			int bf,tim;
+			scanf("%d",&bf);
+			printf("Enter time interval(minute): ");
+			scanf("%d",&tim);
+			printf("Entered automatic backup mode, files will be backed up every %d minutes",tim);
+			while(true)
+			{
+				Backup(bf,false);
+				Sleep(tim*60000);
+			}
+		}
+		else printf("Please Click 1/2/3/4 on the keyboard\n\n");
 	}
 	std::this_thread::sleep_for(std::chrono::seconds(1));
 //    return ;
