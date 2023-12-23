@@ -1,4 +1,4 @@
-#include <iostream>
+#include <iostream> 
 #include <string>
 #include <vector>
 #include <fstream>
@@ -148,7 +148,10 @@ string GetRegistryValue(const std::string& keyPath, const std::string& valueName
 		}
 		RegCloseKey(hKey);
 	}
-
+	else
+	{
+		printf("\n\nThis program calls 7-Zip for high compression backup, but 7-Zip has not been installed on your computer. Please download it from the official website 7-zip.org first.\n\n");
+	}
     return valueData;
 }
 struct names{
@@ -201,107 +204,121 @@ void Backup(int bf,bool echo)
 }
 void CreateConfig()
 {
-	printf("你需要创建 (1)一般配置 还是 (2)全自动配置");
+	printf("\nDo you need to create (1) general configuration or (2) fully automatic configuration\n\n");
 	char ch=getch();
 	string folderName,filename = "config1.ini";
 	string i="1";
     ifstream file(filename);
-    while(file.is_open())
+    while(true)
     {
     	i[0]+=1;
     	filename="config"+i+".ini";
     	ifstream file(filename);
+    	if(!file.is_open()) break;
 	}
 	if(ch=='1')
 	{
-	    if (!file.is_open())
-		{
-			printf("\nEstablishing configuration file named %s\n",&filename[0]); 
-	    	ofstream newFile(filename);
-	    	printf("Please enter the parent folder path of the folder you are backing up (separate each folder path by $ for multiple folders): ");
-			getline(cin,Gpath);
-			printf("Please enter which folder you want to backup to:");
-			getline(cin,Bpath);
-			int summ=PreSolve(Gpath);
-	        if (newFile.is_open()) {
-	        	newFile << "The serial number of the config file used:0";
-	        	newFile << "Backup parent folder path:" << Gpath2[0] << '$';
-	        	for(int i=1;i<summ;++i)
-	        		newFile << Gpath2[i] << '$';
-	        	newFile << Gpath2[summ] << endl;
-	            newFile << "Backup Storage Folder Path:" << Bpath << endl;
-				string keyPath = "Software\\7-Zip"; 
-				string valueName = "Path";
-				string softw=GetRegistryValue(keyPath, valueName),softww="";
-				for(int i=0;i<softw.size();++i)
-					if(softw[i]==' ') softww+='"',softww+=' ',softww+='"';
-					else softww+=softw[i];
-	            newFile << "Compressed software path:" << softww+"7z.exe" << endl;
-	            newFile << "Backup before restoring:0" << endl;
-	            newFile << "Toolbox Topping:0" << endl;
-	            newFile << "Manually select restore:0" << endl;
-	            newFile << "Progress Display:1" << endl;
-	            newFile << "Compressed Level:5" << endl;
-	    	}
-	    	printf("\nThere are the following folders in these folders:\n\n"); 
-	    	for(int i=0;i<=summ;++i)
-	    	{
-	    		cout << endl; 
-	    		std::vector<std::string> subdirectories;
-				listSubdirectories(Gpath2[i], subdirectories);
-			    for (const auto& folderName : subdirectories)
-			    {
-					std::string NGpath=Gpath2[i]+"/"+folderName;
-			        std::string modificationDate = getModificationDate(NGpath);
-			        std::cout << "Folder name: " << folderName << endl;
-			        std::cout << "Modification date " << modificationDate << endl;
-			        std::cout << "-----------" << endl;
-			    }
-			    Sleep(2000);
-			    sprint("Next, you need to give these folders aliases that are easy for you to understand.\n\n",50);
-				for (const auto& folderName : subdirectories)
-			    {
-			        string alias;
-			        cout << "Please enter an alias for folder " << folderName << endl;
-			        cin >> alias;
-					newFile << folderName << endl << alias << endl;
-			    }
-			    newFile << "$" << endl;
-			}
-		    newFile << "*" << endl;
-		    newFile.close();
-	        return ;
-	    }
+		printf("\nEstablishing configuration file named %s\n",&filename[0]); 
+    	ofstream newFile(filename);
+    	printf("Please enter the parent folder path of the folder you are backing up (separate each folder path by $ for multiple folders): ");
+		getline(cin,Gpath);
+		printf("Please enter which folder you want to backup to:");
+		getline(cin,Bpath);
+		for(int i=0;i<=10;++i)
+			Gpath2[i]="";
+		int summ=PreSolve(Gpath);
+        if (newFile.is_open()) {
+        	newFile << "Auto:0" << endl;
+        	newFile << "Backup parent folder path:" << Gpath2[0];
+        	if(summ>1) newFile << '$'; 
+        	for(int i=1;i<summ;++i)
+        		newFile << Gpath2[i] << '$';
+        	if(summ!=0) newFile << Gpath2[summ] << endl;
+        	else newFile << endl;
+            newFile << "Backup Storage Folder Path:" << Bpath << endl;
+			string keyPath = "Software\\7-Zip"; 
+			string valueName = "Path";
+			string softw=GetRegistryValue(keyPath, valueName),softww="";
+			for(int i=0;i<softw.size();++i)
+				if(softw[i]==' ') softww+='"',softww+=' ',softww+='"';
+				else softww+=softw[i];
+            newFile << "Compressed software path:" << softww+"7z.exe" << endl;
+            newFile << "Backup before restoring:0" << endl;
+            newFile << "Toolbox Topping:0" << endl;
+            newFile << "Manually select restore:0" << endl;
+            newFile << "Progress Display:1" << endl;
+            newFile << "Compressed Level:5" << endl;
+    	}
+    	printf("\nThere are the following folders in these folders:\n\n"); 
+    	for(int i=0;i<=summ;++i)
+    	{
+    		cout << endl; 
+    		std::vector<std::string> subdirectories;
+			listSubdirectories(Gpath2[i], subdirectories);
+		    for (const auto& folderName : subdirectories)
+		    {
+				std::string NGpath=Gpath2[i]+"/"+folderName;
+		        std::string modificationDate = getModificationDate(NGpath);
+		        std::cout << "Folder name: " << folderName << endl;
+		        std::cout << "Modification date " << modificationDate << endl;
+		        std::cout << "-----------" << endl;
+		    }
+		    Sleep(2000);
+		    sprint("Next, you need to give these folders aliases that are easy for you to understand.\n\n",50);
+			for (const auto& folderName : subdirectories)
+		    {
+		        string alias;
+		        cout << "Please enter an alias for folder " << folderName << endl;
+		        cin >> alias;
+				newFile << folderName << endl << alias << endl;
+		    }
+		    newFile << "$" << endl;
+		}
+	    newFile << "*" << endl;
+	    newFile.close();
+	    sprint("The configuration file has been created!!!\n",10);
+        return ;
 	}
 	else if(ch=='2')
 	{
-		if(!file.is_open())
-		{
-			ofstream newFile(filename);
-			newFile << "AUTO:1";
-			int configs;
-			printf("需要调用的配置文件序号(从中获取存档名称和别名):");
-			newFile << "Use Config:" << configs << endl;
-			printf("需要备份第几个存档:");
-			cin>>configs;
-			newFile << "BF:" << configs << endl;
-			printf("你需要 (1)定时备份 还是 (2)间隔备份");
-			ch=getch();
-			if(ch=='1')
-				printf("输入你要在什么时间备份:");
-			else if(ch=='2')
-				printf("输入你要间隔多少分钟备份:");
-			else{
-				printf("\nError\n");
-				return ;
-			}
-			string Time;
-			cin>>Time;
-			newFile << "BF Time:" << Time << endl;
-			printf("是否开启免打扰模式(0/1):");
-			cin>>configs;
-			newFile << "Inter:" << configs;
+		ofstream newFile(filename);
+		newFile << "AUTO:1" << endl;
+		int configs;
+		printf("Number of configuration file to be called (retrieve archive name and alias from it):\n");
+		cin>>configs;
+		newFile << "Use Config:" << configs << endl;
+		printf("Which archive needs to be backed up:");
+		cin>>configs;
+		newFile << "BF:" << configs << endl;
+		printf("Do you need (1) scheduled backup or (2) interval backup\n");
+		ch=getch();
+		if(ch=='1'){
+			printf("Enter when you want to back up: 1. Please enter the month and press enter (enter 0 for each month):");
+			int mon,day,hour,min;
+			scanf("%d",&mon);
+			printf("2. Please enter the date and press enter (enter 0 to indicate daily):");
+			scanf("%d",&day);
+			printf("3. Please enter the hour and then press enter (enter 0 for every hour):");
+			scanf("%d",&hour);
+			printf("4. Please enter the minute and then press enter:");
+			scanf("%d",&min);
+			newFile << "Mode:1\nTime:" << mon << " " << day << " " << hour << " " << min << endl;
+		} 
+		else if(ch=='2'){
+			printf("Enter how many minutes you want to backup:");
+			int detime;
+			scanf("%d",&detime);
+			newFile << "Mode:2\nTime:" << detime << endl;
 		}
+		else{
+			printf("\nError\n");
+			return ;
+		}
+		printf("Is the undisturbed mode enabled (0/1):");
+		cin>>configs;
+		newFile << "Inter:" << configs;
+		sprint("The configuration file has been created!!! \n",10);
+		return ;
 	}
 	else
 	{
@@ -322,12 +339,14 @@ void Main()
 		printf("Please enter which folder you want to backup to:");
 		getline(cin,Bpath);
 		int summ=PreSolve(Gpath);
+		cout<< endl << summ << endl;//debug
         if (newFile.is_open()) {
-        	newFile << "The serial number of the config file used:0";
-        	newFile << "Backup parent folder path:" << Gpath2[0] << '$';
+        	newFile << "The serial number of the config file used:0" << endl;
+        	/*newFile << "Backup parent folder path:" << Gpath2[0] << '$';
         	for(int i=1;i<summ;++i)
         		newFile << Gpath2[i] << '$';
-        	newFile << Gpath2[summ] << endl;
+        	newFile << Gpath2[summ] << endl;*/
+        	newFile << "Backup parent folder path:" << Gpath << endl;//new
             newFile << "Backup Storage Folder Path:" << Bpath << endl;
 			string keyPath = "Software\\7-Zip"; 
 			string valueName = "Path";
@@ -387,8 +406,186 @@ void Main()
 		temps="config"+temps+".ini";
 		for(int i=0;i<temps.size();++i)
 			configss[i]=temps[i];
+		freopen(configss,"r",stdin);
+		Qread();
+		bool auto1;
+		cin>>auto1;
+		if(auto1)
+		{
+			int mode,usecf,bfnum,ifinter;
+			Qread();
+			cin>>usecf;
+			Qread();
+			cin>>bfnum;
+			Qread();
+			cin>>mode;
+			int bftime,month,day,hour,min;
+			if(mode==1)
+			{
+				scanf("%d %d %d %d",&month,&day,&hour,&min);
+			}
+			else if(mode==2)
+			{
+				Qread();
+				cin>>bftime;
+			}
+			Qread();
+			cin>>ifinter;
+			if(usecf==0) // 使用一般配置中的存档路径 
+			{
+				freopen("config.ini","r",stdin);
+				string tmp;
+				getline(cin,tmp);
+				Qread();
+			    getline(cin,temps);
+			    int summ=PreSolve(temps);
+			    Qread();
+			    getline(cin,Bpath);
+			    Qread();
+			    getline(cin,yasuo);
+			//    yasuo="\""+yasuo+"\""; useless
+			    Qread();
+			    cin>>tmp;//prebf useless
+			    Qread();
+			    cin>>tmp;//
+			    Qread();
+				cin>>tmp;//
+				Qread();
+				cin>>tmp;//
+				Qread();
+				getline(cin,lv);
+			    int i=0;
+//			    printf("Your folder is as follows:\n\n");
+			    int ttt=0;
+			    while(true)
+			    {
+			    	getline(cin,name[++i].real);
+			    	if(name[i].real[0]=='*') break;
+			    	else if(name[i].real[0]=='$')
+			    	{
+			    		++ttt,--i;
+			    		continue;
+					}
+			    	name[i].real=Gpath2[ttt]+"/"+name[i].real;
+			    	name[i].x=ttt;
+			    	getline(cin,name[i].alias);
+			    	//printf("%d. ",i);
+			    	//cout<<name[i].alias<<endl;
+				}
+				freopen("CON","r",stdin);
+				
+			}
+			else
+			{
+			    string temps="";
+			    char configss[10];
+				temps+='0';
+				temps[0]=usecf+'0';
+				temps="config"+temps+".ini";
+				for(int i=0;i<temps.size();++i)
+					configss[i]=temps[i];
+				freopen(configss,"r",stdin);
+				
+				string tmp;
+				getline(cin,tmp);
+				Qread();
+			    getline(cin,temps);
+			    int summ=PreSolve(temps);
+			    Qread();
+			    getline(cin,Bpath);
+			    Qread();
+			    getline(cin,yasuo);
+			//    yasuo="\""+yasuo+"\""; useless
+			    Qread();
+			    cin>>tmp;//prebf useless
+			    Qread();
+			    cin>>tmp;//
+			    Qread();
+				cin>>tmp;//
+				Qread();
+				cin>>tmp;//
+				Qread();
+				getline(cin,lv);
+			    int i=0;
+			    //printf("Your folder is as follows:\n\n");
+			    int ttt=0;
+			    while(true)
+			    {
+			    	getline(cin,name[++i].real);
+			    	if(name[i].real[0]=='*') break;
+			    	else if(name[i].real[0]=='$')
+			    	{
+			    		++ttt,--i;
+			    		continue;
+					}
+			    	name[i].real=Gpath2[ttt]+"/"+name[i].real;
+			    	name[i].x=ttt;
+			    	getline(cin,name[i].alias);
+			    	//printf("%d. ",i);
+			    	//cout<<name[i].alias<<endl;
+				}
+				freopen("CON","r",stdin);
+			}
+			
+			
+			if(mode==1)
+			{
+				int month,day,hour,min;
+				scanf("%d %d %d %d",&month,&day,&hour,&min);
+				// 获取当前时间
+			    std::time_t now = std::time(nullptr);
+			    std::tm* local_time = std::localtime(&now);
+			
+			    // 设置目标时间为2023年7月1日上午6点         忘记保存啦啦 
+			    std::tm target_time = {0};
+			    //target_time.tm_year = 2023 - 1900; // 年份从1900年开始计算
+			    if(month==0)  /*target_time.tm_mon = local_time->tm_mon*/;
+			    else target_time.tm_mon = month - 1; // 月份从0开始计算
+			    if(day==0) /*target_time.tm_mday = local_time->tm_mday*/;
+			    else target_time.tm_mday = day;
+			    if(hour==0) /*target_time.tm_hour = local_time->tm_hour*/;
+			    else target_time.tm_hour = hour;
+			    if(min==0) /*target_time.tm_min = local_time->tm_min*/;
+			    else target_time.tm_min = min;
+			
+			    // 如果当前时间已经超过了目标时间，那么就不需要等待了
+			    if (std::mktime(local_time) > std::mktime(&target_time)) {
+			        std::cout << "现在的时间已经超过了目标时间" << std::endl;
+			    } else {
+			        // 计算需要等待的时间（单位：秒）
+			        std::time_t wait_time = std::difftime(std::mktime(&target_time), std::mktime(local_time));
+			
+			        // 等待指定的时间
+			        std::this_thread::sleep_for(std::chrono::seconds(wait_time));
+			
+			        // 在这里执行你的语句
+			        std::cout << "现在是2023年7月1日上午6点整" << std::endl;
+			        Backup(bfnum,false);
+			    }
+			} 
+			else if(mode==2)
+			{
+				
+				
+//				puts("233");
+				while(true)
+				{
+					auto now = std::chrono::steady_clock::now();
+				    // 计算目标时间（例如：5秒后）
+				    auto target_time = now + std::chrono::seconds(bftime);
+				
+				    // 计算时间差值
+				    auto duration = target_time - now;
+				
+				    // 让线程休眠指定的时间
+				    std::this_thread::sleep_for(duration);
+				    Backup(bfnum,false);
+				}
+				
+			}
+			//freopen("","r",stdin) //NEWWW
+		}
 	}
-	freopen(configss,"r",stdin);
     Qread();
     getline(cin,temps);
     int summ=PreSolve(temps);
@@ -410,14 +607,14 @@ void Main()
     int i=0;
     printf("Your folder is as follows:\n\n");
     int ttt=0;
-    char ch=getchar();//DEBUG because getline ...
+    //char ch=getchar();//DEBUG because getline ...//bug why?now ok?
     while(true)
     {
     	getline(cin,name[++i].real);
     	if(name[i].real[0]=='*') break;
     	else if(name[i].real[0]=='$')
     	{
-    		++ttt;
+    		++ttt,--i;
     		continue;
 		}
     	name[i].real=Gpath2[ttt]+"/"+name[i].real;
@@ -498,7 +695,7 @@ void Main()
 		{
 			freopen("CON","r",stdin);
         	ofstream cfile("config.ini");
-        	cfile << "The serial number of the config file used:0";
+        	cfile << "The serial number of the config file used:0\n";
         	cfile << "Backup parent folder path:" << Gpath2[0] << '$';
         	for(int i=1;i<summ;++i)
         		cfile << Gpath2[i] << '$';
@@ -538,7 +735,7 @@ void Main()
 			}
 		    cfile << "*" << endl;
 	    	puts("\n\nUpdate folder completed\n\n");
-	    	cfile.close();
+	    	cfile.close(); 
 		}
 		else if(ch=='4')
 		{
