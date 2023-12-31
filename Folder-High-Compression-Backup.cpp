@@ -25,6 +25,17 @@ void sprint(string s,int time)
 	}
 }
 
+inline void neglect(int x)
+{
+	int num;
+	char ch;
+	while(num<x)
+	{
+		ch=getchar();
+		if(ch=='\n') ++num;
+	}
+}
+
 bool isDirectory(const std::string& path)
 {
 #ifdef _WIN32
@@ -110,7 +121,7 @@ std::string getModificationDate(const std::string& filePath)//Folder modificatio
 
     return modificationDate;
 }
-string temp[30];
+string temp[100];
 void ListFiles(const std::string& folderPath) {
     std::string searchPath = folderPath + "\\*.*";
 
@@ -150,14 +161,14 @@ string GetRegistryValue(const std::string& keyPath, const std::string& valueName
 	}
 	else
 	{
-		printf("\n\nThis program calls 7-Zip for high compression backup, but 7-Zip has not been installed on your computer. Please download it from the official website 7-zip.org first.\n\n");
+		printf("\n\nThis program calls 7-Zip for high compression backup, but you don't have 7-Zip installed on your computer yet, please go to the official website 7-zip.org to download it first.\n\n");
 	}
     return valueData;
 }
 struct names{
 	string real,alias;
 	int x;
-}name[100]; 
+}name[100];
 string rname2[20],Bpath,command,yasuo,lv;
 bool prebf,ontop,choice,echos;
 HWND hwnd;
@@ -195,7 +206,7 @@ void Backup(int bf,bool echo)
     tmp="["+tmp+"]"+name[bf].alias;
 	if(echo) command=yasuo+" a -t7z -mx="+lv+" "+tmp+" \""+name[bf].real+"\"\\*";
 	else command=yasuo+" a -t7z -mx="+lv+" "+tmp+" \""+name[bf].real+"\"\\*";
-//	cout<< endl << command <<endl;//debug 
+	cout<< endl << command <<endl;//debug 
 	system(command.c_str());
 	if(echo) command="move "+tmp+".7z "+folderName;
 	else command="move "+tmp+".7z "+folderName;
@@ -204,7 +215,7 @@ void Backup(int bf,bool echo)
 }
 void CreateConfig()
 {
-	printf("\nDo you need to create (1) general configuration or (2) fully automatic configuration\n\n");
+	printf("\nDo you need to create (1) a general configuration or (2) a fully automated configuration?\n\n");
 	char ch=getch();
 	string folderName,filename = "config1.ini";
 	string i="1";
@@ -276,7 +287,7 @@ void CreateConfig()
 		}
 	    newFile << "*" << endl;
 	    newFile.close();
-	    sprint("The configuration file has been created!!!\n",10);
+	    sprint("The configuration file is created!!!\n",10);
         return ;
 	}
 	else if(ch=='2')
@@ -284,28 +295,28 @@ void CreateConfig()
 		ofstream newFile(filename);
 		newFile << "AUTO:1" << endl;
 		int configs;
-		printf("Number of configuration file to be called (retrieve archive name and alias from it):\n");
+		printf("Serial number of the configuration file to call (from which to get the archive name and alias).\n");
 		cin>>configs;
 		newFile << "Use Config:" << configs << endl;
-		printf("Which archive needs to be backed up:");
+		printf("How many archives need to be backed up.");
 		cin>>configs;
 		newFile << "BF:" << configs << endl;
-		printf("Do you need (1) scheduled backup or (2) interval backup\n");
+		printf("Do you need (1) regular backups or (2) spaced backups?\n");
 		ch=getch();
 		if(ch=='1'){
-			printf("Enter when you want to back up: 1. Please enter the month and press enter (enter 0 for each month):");
+			printf("Enter what time you want to back up: 1. Please enter the month, then enter (enter 0 for every month).");
 			int mon,day,hour,min;
 			scanf("%d",&mon);
-			printf("2. Please enter the date and press enter (enter 0 to indicate daily):");
+			printf("2.Please enter the date, then enter (enter 0 for every day):");
 			scanf("%d",&day);
-			printf("3. Please enter the hour and then press enter (enter 0 for every hour):");
+			printf("3.Please enter hours, then enter (enter 0 for every hour):");
 			scanf("%d",&hour);
-			printf("4. Please enter the minute and then press enter:");
+			printf("4.Please enter the minutes, and then enter:");
 			scanf("%d",&min);
 			newFile << "Mode:1\nTime:" << mon << " " << day << " " << hour << " " << min << endl;
 		} 
 		else if(ch=='2'){
-			printf("Enter how many minutes you want to backup:");
+			printf("Enter how many minutes between backups you want to:");
 			int detime;
 			scanf("%d",&detime);
 			newFile << "Mode:2\nTime:" << detime << endl;
@@ -314,10 +325,10 @@ void CreateConfig()
 			printf("\nError\n");
 			return ;
 		}
-		printf("Is the undisturbed mode enabled (0/1):");
+		printf("Whether to enable Do Not Disturb mode (0/1).");
 		cin>>configs;
-		newFile << "Inter:" << configs;
-		sprint("The configuration file has been created!!! \n",10);
+		newFile << "Inter:" << configs << "\n*";
+		sprint("The configuration file is created!!!\n",10);
 		return ;
 	}
 	else
@@ -339,7 +350,6 @@ void Main()
 		printf("Please enter which folder you want to backup to:");
 		getline(cin,Bpath);
 		int summ=PreSolve(Gpath);
-		cout<< endl << summ << endl;//debug
         if (newFile.is_open()) {
         	newFile << "The serial number of the config file used:0" << endl;
         	/*newFile << "Backup parent folder path:" << Gpath2[0] << '$';
@@ -395,20 +405,20 @@ void Main()
     
     freopen("config.ini","r",stdin);
     Qread();
+    string temps,tempss;
     int configs;
-    string temps="";
-    char configss[10];
+    char configss[100];
 	scanf("%d",&configs);
 	if(configs!=0)
 	{
-		temps+='0';
-		temps[0]=configs+'0';
+		temps=to_string(configs); //only c++11
 		temps="config"+temps+".ini";
-		for(int i=0;i<temps.size();++i)
-			configss[i]=temps[i];
+		/*for(int i=0;i<temps.size();++i)
+			configss[i]=temps[i];*/
+		strcpy(configss,temps.c_str());
 		freopen(configss,"r",stdin);
 		Qread();
-		bool auto1;
+		int auto1;
 		cin>>auto1;
 		if(auto1)
 		{
@@ -422,6 +432,7 @@ void Main()
 			int bftime,month,day,hour,min;
 			if(mode==1)
 			{
+				Qread(); 
 				scanf("%d %d %d %d",&month,&day,&hour,&min);
 			}
 			else if(mode==2)
@@ -431,35 +442,60 @@ void Main()
 			}
 			Qread();
 			cin>>ifinter;
-			if(usecf==0) // 使用一般配置中的存档路径 
+			if(usecf==0) // Use the archive path in the general configuration 
 			{
 				freopen("config.ini","r",stdin);
-				string tmp;
-				getline(cin,tmp);
+				neglect(1); 
 				Qread();
-			    getline(cin,temps);
-			    int summ=PreSolve(temps);
+				char inputs[1000];
+				for(int i=0;;++i)
+				{
+					inputs[i]=getchar();
+					if(inputs[i]=='\n'){
+						inputs[i]='\0';break;
+					}
+				}
+				tempss=inputs;
+			    int summ=PreSolve(tempss);
 			    Qread();
-			    getline(cin,Bpath);
-			    Qread();
-			    getline(cin,yasuo);
-			//    yasuo="\""+yasuo+"\""; useless
-			    Qread();
-			    cin>>tmp;//prebf useless
-			    Qread();
-			    cin>>tmp;//
-			    Qread();
-				cin>>tmp;//
+			    memset(inputs,'\0',sizeof(inputs));
+			    for(int i=0;;++i)
+				{
+					inputs[i]=getchar();
+					if(inputs[i]=='\n'){
+						inputs[i]='\0';break;
+					}
+				}
+				Bpath=inputs;
 				Qread();
-				cin>>tmp;//
+				memset(inputs,'\0',sizeof(inputs));
+			    for(int i=0;;++i)
+				{
+					inputs[i]=getchar();
+					if(inputs[i]=='\n'){
+						inputs[i]='\0';break;
+					}
+				}
+				yasuo=inputs;
+				neglect(4);
 				Qread();
-				getline(cin,lv);
+				memset(inputs,'\0',sizeof(inputs));
+				inputs[0]=getchar();
+				lv=inputs;
 			    int i=0;
-//			    printf("Your folder is as follows:\n\n");
 			    int ttt=0;
+			    inputs[0]=getchar();// addition
 			    while(true)
 			    {
-			    	getline(cin,name[++i].real);
+					memset(inputs,'\0',sizeof(inputs));
+					for(int i=0;;++i)
+					{
+						inputs[i]=getchar();
+						if(inputs[i]=='\n'){
+							inputs[i]='\0';break;
+						}
+					}
+					name[++i].real=inputs;
 			    	if(name[i].real[0]=='*') break;
 			    	else if(name[i].real[0]=='$')
 			    	{
@@ -468,24 +504,25 @@ void Main()
 					}
 			    	name[i].real=Gpath2[ttt]+"/"+name[i].real;
 			    	name[i].x=ttt;
-			    	getline(cin,name[i].alias);
-			    	//printf("%d. ",i);
-			    	//cout<<name[i].alias<<endl;
+			    	memset(inputs,'\0',sizeof(inputs));
+					for(int i=0;;++i)
+					{
+						inputs[i]=getchar();
+						if(inputs[i]=='\n'){
+							inputs[i]='\0';break;
+						}
+					}
+					name[i].alias=inputs;
 				}
-				freopen("CON","r",stdin);
-				
 			}
 			else
 			{
-			    string temps="";
+				string temps=to_string(usecf);
 			    char configss[10];
-				temps+='0';
-				temps[0]=usecf+'0';
 				temps="config"+temps+".ini";
 				for(int i=0;i<temps.size();++i)
 					configss[i]=temps[i];
 				freopen(configss,"r",stdin);
-				
 				string tmp;
 				getline(cin,tmp);
 				Qread();
@@ -495,19 +532,10 @@ void Main()
 			    getline(cin,Bpath);
 			    Qread();
 			    getline(cin,yasuo);
-			//    yasuo="\""+yasuo+"\""; useless
-			    Qread();
-			    cin>>tmp;//prebf useless
-			    Qread();
-			    cin>>tmp;//
-			    Qread();
-				cin>>tmp;//
-				Qread();
-				cin>>tmp;//
+			    neglect(4);
 				Qread();
 				getline(cin,lv);
 			    int i=0;
-			    //printf("Your folder is as follows:\n\n");
 			    int ttt=0;
 			    while(true)
 			    {
@@ -521,69 +549,46 @@ void Main()
 			    	name[i].real=Gpath2[ttt]+"/"+name[i].real;
 			    	name[i].x=ttt;
 			    	getline(cin,name[i].alias);
-			    	//printf("%d. ",i);
-			    	//cout<<name[i].alias<<endl;
 				}
-				freopen("CON","r",stdin);
 			}
-			
-			
 			if(mode==1)
 			{
-				int month,day,hour,min;
-				scanf("%d %d %d %d",&month,&day,&hour,&min);
-				// 获取当前时间
-			    std::time_t now = std::time(nullptr);
-			    std::tm* local_time = std::localtime(&now);
-			
-			    // 设置目标时间为2023年7月1日上午6点         忘记保存啦啦 
-			    std::tm target_time = {0};
-			    //target_time.tm_year = 2023 - 1900; // 年份从1900年开始计算
-			    if(month==0)  /*target_time.tm_mon = local_time->tm_mon*/;
-			    else target_time.tm_mon = month - 1; // 月份从0开始计算
-			    if(day==0) /*target_time.tm_mday = local_time->tm_mday*/;
-			    else target_time.tm_mday = day;
-			    if(hour==0) /*target_time.tm_hour = local_time->tm_hour*/;
-			    else target_time.tm_hour = hour;
-			    if(min==0) /*target_time.tm_min = local_time->tm_min*/;
-			    else target_time.tm_min = min;
-			
-			    // 如果当前时间已经超过了目标时间，那么就不需要等待了
-			    if (std::mktime(local_time) > std::mktime(&target_time)) {
-			        std::cout << "现在的时间已经超过了目标时间" << std::endl;
-			    } else {
-			        // 计算需要等待的时间（单位：秒）
-			        std::time_t wait_time = std::difftime(std::mktime(&target_time), std::mktime(local_time));
-			
-			        // 等待指定的时间
-			        std::this_thread::sleep_for(std::chrono::seconds(wait_time));
-			
-			        // 在这里执行你的语句
-			        std::cout << "现在是2023年7月1日上午6点整" << std::endl;
-			        Backup(bfnum,false);
-			    }
+				while(true)
+				{
+				    std::time_t now = std::time(nullptr);
+				    std::tm* local_time = std::localtime(&now);
+				
+				    std::tm target_time = {0};
+				    target_time.tm_year = local_time->tm_year;
+				    if(month==0)  target_time.tm_mon = local_time->tm_mon+1;
+				    else target_time.tm_mon = month - 1;
+				    if(day==0) target_time.tm_mday = local_time->tm_mday+1;
+				    else target_time.tm_mday = day;
+				    if(hour==0) target_time.tm_hour = local_time->tm_hour+1;
+				    else target_time.tm_hour = hour;
+				    if(min==0) target_time.tm_min = local_time->tm_min+1;
+				    else target_time.tm_min = min;
+				    if (std::mktime(local_time) > std::mktime(&target_time)) {
+				        std::cout << "现在的时间已经超过了目标时间" << std::endl;
+				    } else {
+				        std::time_t wait_time = std::difftime(std::mktime(&target_time), std::mktime(local_time));
+				        std::this_thread::sleep_for(std::chrono::seconds(wait_time));
+				        Backup(bfnum,false);
+				    }
+				}
 			} 
 			else if(mode==2)
 			{
-				
-				
-//				puts("233");
 				while(true)
 				{
 					auto now = std::chrono::steady_clock::now();
-				    // 计算目标时间（例如：5秒后）
-				    auto target_time = now + std::chrono::seconds(bftime);
-				
-				    // 计算时间差值
+				    auto target_time = now + std::chrono::seconds(10);
 				    auto duration = target_time - now;
-				
-				    // 让线程休眠指定的时间
 				    std::this_thread::sleep_for(duration);
 				    Backup(bfnum,false);
 				}
 				
 			}
-			//freopen("","r",stdin) //NEWWW
 		}
 	}
     Qread();
@@ -593,7 +598,6 @@ void Main()
     getline(cin,Bpath);
     Qread();
     getline(cin,yasuo);
-//    yasuo="\""+yasuo+"\""; useless
     Qread();
     cin>>prebf;
     Qread();
@@ -815,12 +819,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         hInstance,
         NULL
     );
-    CreateWindow("button", "Open the data folder",
+    CreateWindow("button", "Data folder",
         WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
         20, 10, 120, 35,
         hwnd, (HMENU)1, hInstance, NULL);
 
-    CreateWindow("button", "Open the backup folder",
+    CreateWindow("button", "Backup folder",
         WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
         150, 10, 120, 35,
         hwnd, (HMENU)2, hInstance, NULL);
